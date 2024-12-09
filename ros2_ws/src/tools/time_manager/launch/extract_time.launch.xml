@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<launch>
+    <!-- Declare parameters with defaults -->
+    <arg name="bag_file" default="/home/arata22/record/sample"/>
+    <arg name="topic_name" default="/event_camera/events"/>
+    <arg name='output_file' default="./outputs/" />
+    
+
+    <!-- robot_state_publisher -->
+    <node pkg="time_manager" exec="extract_time_node" name="check_time_node">
+        <param name="bag_file" value="$(var bag_file)" />
+        <param name="topic_name" value="$(var topic_name)" />
+        <param name="output_file" value="$(var output_file)" />
+    </node>
+</launch>

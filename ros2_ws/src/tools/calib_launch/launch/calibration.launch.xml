@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<launch>
+  
+  <include file="$(find-pkg-share flycap2_camera_driver)/launch/grasshopper3.launch.xml" >
+  </include>
+
+  
+
+  <include file="$(find-pkg-share metavision_driver)/launch/driver_node.launch.py" >
+  </include>
+
+  <include file="$(find-pkg-share event_camera_renderer)/launch/renderer.launch.py" >
+  </include>
+
+  
+
+  
+</launch>
