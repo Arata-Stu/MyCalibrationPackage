@@ -110,6 +110,8 @@ private:
                 // オフセットを初期化
                 if (!time_offset_microseconds.has_value()) {
                     time_offset_microseconds = timestamp_microseconds;
+                    // オフセット値をファイルの先頭に書き込む
+                    output_file << "# Offset (microseconds): " << time_offset_microseconds.value() << std::endl;
                 }
 
                 // オフセットを引いた相対時間を計算
@@ -126,6 +128,7 @@ private:
         output_file.close();
         RCLCPP_INFO(this->get_logger(), "すべてのタイムスタンプを %s に書き出しました。", output_file_.c_str());
     }
+
 };
 
 int main(int argc, char *argv[])
