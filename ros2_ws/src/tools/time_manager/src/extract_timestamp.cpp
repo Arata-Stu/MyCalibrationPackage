@@ -5,6 +5,7 @@
 #include <fstream>
 #include <iostream>
 #include <optional>
+#include <filesystem>  // ファイル名抽出に必要
 
 class BagReaderNode : public rclcpp::Node
 {
@@ -14,21 +15,25 @@ public:
         // パラメータの宣言
         this->declare_parameter<std::string>("bag_file", "");
         this->declare_parameter<std::string>("topic_name", "");
-        this->declare_parameter<std::string>("output_file", "");
+        this->declare_parameter<std::string>("project_root", "");
 
         // パラメータの取得
         bag_file_ = this->get_parameter("bag_file").as_string();
         topic_name_ = this->get_parameter("topic_name").as_string();
-        output_file_ = this->get_parameter("output_file").as_string();
+        project_root_ = this->get_parameter("project_root").as_string();
 
-        if (bag_file_.empty() || topic_name_.empty() || output_file_.empty()) {
-            RCLCPP_ERROR(this->get_logger(), "bag_file, topic_name, または output_file パラメータが設定されていません。");
+        if (bag_file_.empty() || topic_name_.empty() || project_root_.empty()) {
+            RCLCPP_ERROR(this->get_logger(), "bag_file, topic_name, または project_root パラメータが設定されていません。");
             rclcpp::shutdown();
             return;
         }
 
+        // 出力ファイル名を自動生成
+        output_file_ = generate_output_file_name(bag_file_, project_root_);
+
         // Bagファイルを読み取る
         process_bag_file();
+
         // ノードの終了
         rclcpp::shutdown();  // Bagファイル処理後にシャットダウン
     }
@@ -36,7 +41,28 @@ public:
 private:
     std::string bag_file_;
     std::string topic_name_;
+    std::string project_root_;
     std::string output_file_;
+
+    // Bagフォルダ名を元に出力ファイル名を生成する関数
+    std::string generate_output_file_name(const std::string &bag_file, const std::string &project_root)
+    {
+        namespace fs = std::filesystem;
+
+        // フォルダ名を抽出
+        fs::path file_path(bag_file);
+        std::string folder_name = file_path.filename().string();
+        if (folder_name.empty()) {
+            folder_name = file_path.parent_path().filename().string();
+        }
+
+        // 保存先ディレクトリを構築
+        fs::path output_dir = fs::path(project_root) / "output" / "timestamps";
+        fs::create_directories(output_dir);  // ディレクトリを作成（既存なら無視）
+
+        // 出力ファイルパスを生成
+        return (output_dir / (folder_name + "_timestamps.txt")).string();
+    }
 
     void process_bag_file()
     {
